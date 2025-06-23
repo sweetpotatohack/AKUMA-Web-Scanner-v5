@@ -282,3 +282,68 @@ docker-compose up akuma-frontend --build --force-recreate
   <p><i>"Hack the planet responsibly"</i></p>
   <p><i>"Взламывай планету ответственно"</i></p>
 </div>
+
+## ⚡ One-Command Startup
+
+### 🚀 Super Quick Start
+
+```bash
+# Clone and start in one go!
+git clone https://github.com/sweetpotatohack/AKUMA-Web-Scanner-v5.git
+cd AKUMA-Web-Scanner-v5
+docker-compose up -d
+
+# That's it! 🎉
+# Web UI: http://localhost:3001
+# API: http://localhost:8000/docs
+```
+
+### 🛠️ Available Commands
+
+```bash
+# Using make (recommended)
+make up          # Start all services 
+make down        # Stop all services
+make status      # Check status
+make logs        # View logs
+make test        # Test API endpoints
+make clean       # Clean up everything
+
+# Using docker-compose directly  
+docker-compose up -d              # Start all services
+docker-compose down               # Stop services
+docker-compose ps                 # Check status
+docker-compose logs -f            # View logs
+
+# Using start script
+./start.sh       # Automated startup with status checks
+```
+
+### 🔧 Quick Commands Reference
+
+| Command | Purpose |
+|---------|---------|
+| `docker-compose up -d` | ⚡ **One-command startup** |
+| `make up` | 🚀 Smart startup with wait times |
+| `make quick` | ⚡ Core services only |
+| `make status` | 📊 Check all containers |
+| `make test` | 🧪 Test API endpoints |
+| `make clean` | 🧹 Complete cleanup |
+
+### 🎯 Production Ready
+
+The system includes:
+- ✅ **Health checks** for all services
+- ✅ **Automatic dependencies** management
+- ✅ **Graceful startup** sequencing
+- ✅ **Service recovery** on failure
+- ✅ **Volume persistence** for data
+- ✅ **Network isolation** for security
+
+### 🏃‍♂️ Fast Track (30 seconds to running)
+
+```bash
+git clone https://github.com/sweetpotatohack/AKUMA-Web-Scanner-v5.git && cd AKUMA-Web-Scanner-v5 && docker-compose up -d
+```
+
+**Done!** Your vulnerability scanner is running at http://localhost:3001
