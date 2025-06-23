@@ -1,0 +1,48 @@
+body {
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  background: linear-gradient(45deg, #0a0a0a, #1a1a2e);
+  color: #00ff00;
+  min-height: 100vh;
+}
+
+.cyberpunk-container {
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.neon-text {
+  text-shadow: 0 0 10px currentColor;
+}
+
+.cyber-button {
+  background: linear-gradient(45deg, #ff006e, #8338ec);
+  border: 2px solid #00ff00;
+  color: #ffffff;
+  padding: 12px 24px;
+  font-family: inherit;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+}
+
+.cyber-button:hover {
+  background: linear-gradient(45deg, #8338ec, #ff006e);
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+.glitch {
+  animation: glitch 2s infinite;
+}
+
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}

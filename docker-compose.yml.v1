@@ -1,0 +1,169 @@
+version: '3.8'
+
+services:
+  # Frontend React App
+  akuma-frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_WS_URL=ws://localhost:8000
+    depends_on:
+      - akuma-backend
+    networks:
+      - akuma-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    
+  # Backend FastAPI + WebSockets
+  akuma-backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://akuma:akuma_password_2024@postgres:5432/akuma_scanner
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-super-secret-akuma-key-here
+      - ENVIRONMENT=development
+      - MAX_PARALLEL_SCANS=10
+      - SCAN_TIMEOUT=3600
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - akuma-network
+    volumes:
+      - ./backend:/app
+      - akuma-scan-results:/app/scan_results
+      - /var/run/docker.sock:/var/run/docker.sock
+    privileged: true
+    
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=akuma_scanner
+      - POSTGRES_USER=akuma
+      - POSTGRES_PASSWORD=akuma_password_2024
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - akuma-network
+      
+  # Redis for caching and task queue
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - akuma-network
+      
+  # Celery Worker for background tasks
+  celery-worker:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=4
+    environment:
+      - DATABASE_URL=postgresql://akuma:akuma_password_2024@postgres:5432/akuma_scanner
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-super-secret-akuma-key-here
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - akuma-network
+    volumes:
+      - ./backend:/app
+      - akuma-scan-results:/app/scan_results
+      - /var/run/docker.sock:/var/run/docker.sock
+    privileged: true
+    
+  # Celery Beat for scheduled tasks
+  celery-beat:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A app.celery_app beat --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://akuma:akuma_password_2024@postgres:5432/akuma_scanner
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-super-secret-akuma-key-here
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - akuma-network
+    volumes:
+      - ./backend:/app
+      
+  # Flower for monitoring Celery
+  flower:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A app.celery_app flower --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      - DATABASE_URL=postgresql://akuma:akuma_password_2024@postgres:5432/akuma_scanner
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    networks:
+      - akuma-network
+      
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - akuma-frontend
+      - akuma-backend
+    networks:
+      - akuma-network
+      
+  # Scanner Engine (isolated container)
+  akuma-scanner:
+    build: 
+      context: ./scanner
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - MAX_PARALLEL_JOBS=50
+      - NMAP_RATE_LIMIT=5000
+      - NUCLEI_RATE_LIMIT=100
+    depends_on:
+      - redis
+    networks:
+      - akuma-network
+    volumes:
+      - akuma-scan-results:/app/results
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+
+volumes:
+  postgres_data:
+  redis_data:
+  akuma-scan-results:
+
+networks:
+  akuma-network:
+    driver: bridge

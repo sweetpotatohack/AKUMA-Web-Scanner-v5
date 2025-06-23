@@ -1,0 +1,57 @@
+"""
+AKUMA WEB SCANNER - Simple Backend for Testing
+Simplified FastAPI backend for initial testing
+By AKUMA & Феня - The Cyber Gods 🔥💀
+"""
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
+
+# Create FastAPI app
+app = FastAPI(
+    title="AKUMA Web Scanner - Test API",
+    description="🔥 Legendary Cyberpunk Vulnerability Scanner (Test Mode) 🔥",
+    version="3.0-test"
+)
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/")
+async def root():
+    return {
+        "message": "🔥 AKUMA Web Scanner v3.0 - Test API 🔥",
+        "status": "running",
+        "version": "3.0-test"
+    }
+
+@app.get("/api/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "version": "3.0-test",
+        "message": "🚀 AKUMA Scanner is ready for action!"
+    }
+
+@app.get("/api/test")
+async def test_endpoint():
+    return {
+        "message": "🎯 Test endpoint working!",
+        "scanner": "AKUMA TURBO v3.0",
+        "mode": "testing"
+    }
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "simple_main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True
+    )
